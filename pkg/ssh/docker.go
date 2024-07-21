@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/benodiwal/docker_ssh/pkg/env"
 	"github.com/gliderlabs/ssh"
 )
 
@@ -21,5 +22,6 @@ func Init() {
 	})
 
 	log.Println("starting ssh server on port 2222 ...")
-	log.Fatal(ssh.ListenAndServe(":2222", nil))
+	PORT := fmt.Sprintf(":%s", env.Read(env.PORT))
+	log.Fatal(ssh.ListenAndServe(PORT, nil))
 }
