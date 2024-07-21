@@ -33,6 +33,7 @@ func Init() {
 			StdinOnce: true,
 			Volumes: make(map[string]struct{}),
 		}
+		
 		status, cleanup, err := runDocker(cfg, sess)
 		defer cleanup()
 		if err != nil {
