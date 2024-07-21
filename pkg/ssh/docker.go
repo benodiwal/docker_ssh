@@ -19,11 +19,27 @@ func Init() {
 
 		username := sess.User()
 		log.Printf("User %s connected", username)
-
 		_, _ = sess.Write([]byte("Hello, " + username + "!\n"))
 
-		fmt.Println(isTty)
-		sess.Exit(int(0))
+		cfg := &container.Config{
+			Image: "jq",
+			Cmd: sess.Command(),
+			Env: sess.Environ(),
+			Tty: isTty,
+			OpenStdin: true,
+			AttachStderr: true,
+			AttachStdin: true,
+			AttachStdout: true,
+			StdinOnce: true,
+			Volumes: make(map[string]struct{}),
+		}
+		status, cleanup, err := runDocker(cfg, sess)
+		defer cleanup()
+		if err != nil {
+			fmt.Println(sess, err)
+			log.Println(err)
+		}
+		sess.Exit(int(status))
 	})
 
 	log.Println("starting ssh server on port 2222 ...")
@@ -34,7 +50,9 @@ func Init() {
 type Cleanup func ()
 
 func runDocker(cfg *container.Config, sess ssh.Session) (status int64, cleaup Cleanup, err error) {
-	docker, err := client.NewClientWithOpts()
+	
+
+	docker, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {
 		log.Fatalf("Failed to create docker %s", err)
 	}
